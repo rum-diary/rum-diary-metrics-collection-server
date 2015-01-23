@@ -2,10 +2,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// Send all express logs to our custom logger.
-const morgan = require('morgan');
+'use strict';
 
-const logger = require('../logger');
+// Send all express logs to our custom logger.
+var morgan = require('morgan');
+
+var logger = require('../logger');
 
 module.exports = function () {
   return morgan('tiny', {

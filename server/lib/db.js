@@ -2,22 +2,24 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+'use strict';
+
 /**
  * Loads up the database. Exports https://github.com/rum-diary/rum-diary-db-mongo
  *
  * @Class DB
  */
-const config = require('./config');
+var config = require('./config');
 
-const dbConfig = {
+var dbConfig = {
   get: function (name) {
     return config.get('mongo.' + name);
   }
 };
 
-const MongoAdapter = require('rum-diary-db-mongo');
+var MongoAdapter = require('rum-diary-db-mongo');
 
-const db = Object.create(MongoAdapter);
+var db = Object.create(MongoAdapter);
 db.init(dbConfig);
 
 module.exports = db;

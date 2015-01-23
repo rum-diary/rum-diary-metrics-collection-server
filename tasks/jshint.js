@@ -6,14 +6,24 @@ module.exports = function (grunt) {
   'use strict';
 
   grunt.config('jshint', {
-    options: {
-      jshintrc: '.jshintrc',
-      reporter: require('jshint-stylish'),
+    app: {
+      options: {
+        jshintrc: '.jshintrc'
+      },
+      src: [
+        '**/*.js',
+        '!test/**',
+        '!node_modules/**'
+      ]
     },
-    all: [
-      'Gruntfile.js',
-      'tasks/{,*/}*.js',,
-      'server/{,*/}*.js'
-    ]
+    test: {
+      options: {
+        /* The test .jshintrc allows mocha global variables */
+        jshintrc: 'test/.jshintrc'
+      },
+      src: [
+        'test/**/*.js'
+      ]
+    }
   });
 };

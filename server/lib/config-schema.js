@@ -2,7 +2,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-const path = require('path');
+'use strict';
+
+var path = require('path');
+
+function getProcName() {
+  return path.basename(process.argv[1], '.js');
+}
 
 module.exports = {
   hostname: {
@@ -72,9 +78,4 @@ module.exports = {
 
   proc_name: getProcName()
 };
-
-function getProcName() {
-  return path.basename(process.argv[1], '.js');
-}
-
 

@@ -2,12 +2,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-const joi = require('joi');
-const RumDiaryEndpoint = require('rum-diary-endpoint');
-const MetricsHandler = RumDiaryEndpoint.Handler;
-const MetricsCollector = require('../lib/metrics-collector');
+'use strict';
 
-const inputValidation = require('../lib/input-validation');
+var joi = require('joi');
+var RumDiaryEndpoint = require('rum-diary-endpoint');
+var MetricsHandler = RumDiaryEndpoint.Handler;
+var MetricsCollector = require('../lib/metrics-collector');
+
+var inputValidation = require('../lib/input-validation');
 
 module.exports = function (options) {
   options = options || {};

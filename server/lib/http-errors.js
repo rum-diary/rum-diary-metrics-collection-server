@@ -2,6 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+'use strict';
+
 /**
  * HTTP errors. List of errors:
  *  https://github.com/mercmobily/HTTPErrors
@@ -10,7 +12,7 @@
  *
  * e.g.:
  *
- * const httpErrors = require('./lib/http-errors');
+ * var httpErrors = require('./lib/http-errors');
  *
  * routerHandler(req, res, next) {
  *   if (! isUserAuthenticated(req)) {
@@ -19,7 +21,7 @@
  * }
  */
 
-const httpErrors = require('allhttperrors');
+var httpErrors = require('allhttperrors');
 
 Object.keys(httpErrors).forEach(function(errorName) {
   exports[errorName] = function (message) {
@@ -40,5 +42,5 @@ exports.is = function (err, errorType) {
     return err instanceof httpErrors[errorType];
   }
 
-  return err.constructor === errorType().constructor;
+  return err.varructor === errorType().varructor;
 };

@@ -2,18 +2,19 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-const express = require('express');
-const bodyParser = require('body-parser');
+'use strict';
 
-const routes = require('./lib/routes.js');
+var express = require('express');
+var bodyParser = require('body-parser');
 
-const httpServer = require('./lib/http-server');
+var routes = require('./lib/routes.js');
 
-const logging = require('./lib/middleware/logging');
-const errorHandler = require('./lib/middleware/error');
+var httpServer = require('./lib/http-server');
 
+var logging = require('./lib/middleware/logging');
+var errorHandler = require('./lib/middleware/error');
 
-const app = express();
+var app = express();
 
 app.use(logging({ app: app }));
 
@@ -21,7 +22,6 @@ app.use(bodyParser.json());
 
 app.disable('x-powered-by');
 
-// Get all of our routes.
 app.use(routes);
 
 app.use(errorHandler);

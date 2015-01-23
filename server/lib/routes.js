@@ -2,13 +2,15 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-const path = require('path');
-const Triage = require('triage');
+'use strict';
 
-const Router = require('express').Router;
-const router = new Router();
+var path = require('path');
+var Triage = require('triage');
 
-const ROUTES_DIR = path.join(__dirname, '..', 'routes');
+var Router = require('express').Router;
+var router = new Router();
+
+var ROUTES_DIR = path.join(__dirname, '..', 'routes');
 
 var triage = new Triage();
 triage.init({

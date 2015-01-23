@@ -2,12 +2,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-const assert = require('chai').assert;
+'use strict';
 
-const MetricsCollector = require('../../server/lib/metrics-collector');
-const db = require('../../server/lib/db');
-const siteCollection = db.site;
-const pageViewCollection = db.pageView;
+var assert = require('chai').assert;
+
+var MetricsCollector = require('../../server/lib/metrics-collector');
+var db = require('../../server/lib/db');
+var siteCollection = db.site;
+var pageViewCollection = db.pageView;
 
 /*global describe, it */
 

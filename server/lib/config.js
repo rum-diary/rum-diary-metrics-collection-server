@@ -2,23 +2,16 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-const convict = require('convict');
-const path = require('path');
-const fs = require('fs');
+'use strict';
 
-const schema = require('./config-schema');
+var convict = require('convict');
+var path = require('path');
+var fs = require('fs');
+
+var schema = require('./config-schema');
 
 var config = convict(schema);
 
-useDevConfigIfNoneDefined();
-loadConfigFiles();
-setNodeEnv();
-
-config.validate();
-
-config.set('public_url', getPublicUrl());
-
-module.exports = config;
 
 function setNodeEnv() {
   if ( ! process.env.NODE_ENV) {
@@ -57,3 +50,14 @@ function getPublicUrl() {
 
   return protocol + '://' + hostname + port;
 }
+
+useDevConfigIfNoneDefined();
+loadConfigFiles();
+setNodeEnv();
+
+config.validate();
+
+config.set('public_url', getPublicUrl());
+
+module.exports = config;
+

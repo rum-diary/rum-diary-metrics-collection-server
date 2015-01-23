@@ -2,12 +2,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+'use strict';
 
-const config = require('./config');
-const logger = require('./logger');
-const http = require('http');
+var config = require('./config');
+var logger = require('./logger');
+var http = require('http');
 
-const HTTP_PORT = config.get('http_port');
+var HTTP_PORT = config.get('http_port');
 
 exports.start = function (options) {
 

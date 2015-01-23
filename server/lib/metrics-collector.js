@@ -20,27 +20,96 @@ MetricsCollector.InvalidLocationError = errorFactory('InvalidLocation');
 MetricsCollector.InvalidReferrerError = errorFactory('InvalidReferrer');
 MetricsCollector.NonExistentSiteError = errorFactory('NonExistentSite');
 
-MetricsCollector.prototype = {
-  init: function () {
-    // nothing to do here.
-  },
+function parseLocation(data) {
+  var parsedUrl = url.parse(data.location);
+  data.hostname = parsedUrl.hostname;
+  data.path = parsedUrl.pathname;
 
-  destroy: function () {
-    // nothing to do here.
-  },
-
-  write: function (data) {
-    if (! data.length) {
-      data = [ data ];
-    }
-
-    return Promises.all(data.map(saveItem));
-  },
-
-  flush: function () {
-    // nothing to do here.
+  if (! data.hostname) {
+    logger.warn('error parsing location: %s, cannot save data', data.location);
+    throw new MetricsCollector.InvalidLocationError(data.location);
   }
-};
+}
+
+function parseReferrer(data) {
+  if (data.referrer) {
+    var parsedReferrer = url.parse(data.referrer);
+    data.referrer_hostname = parsedReferrer.hostname;
+    data.referrer_path = parsedReferrer.pathname || '/';
+
+    if (! data.referrer_hostname) {
+      logger.warn('error parsing referrer: %s', data.referrer);
+      throw new MetricsCollector.InvalidReferrerError(data.referrer);
+    }
+    // TODO - if puuid is sent but referrer is not, pull the previous page
+    // and update accordingly.
+  }
+}
+
+function parseUserAgent(data) {
+  var ua = useragent.parse(data.userAgent || data.user_agent);
+  data.os = ua.os.toString();
+  data.os_parsed = {
+    family: ua.os.family,
+    major: ua.os.major,
+    minor: ua.os.minor
+  };
+
+  data.browser = {
+    family: ua.family,
+    major: ua.major,
+    minor: ua.minor
+  };
+}
+
+function cleanTags(data) {
+  if (data.tags) {
+    data.tags = data.tags.reduce(function(tags, tag) {
+      tag = tag && tag.trim();
+      if (tag && tag.length) {
+        tags.push(tag);
+      }
+      return tags;
+    }, []);
+  }
+}
+
+function updatePreviousPage(data) {
+  // If there is a previous page uuid, update the
+  // previous page's exit status, and where the
+  // user went.
+  if (data.puuid) {
+    return db.pageView.getOne({ uuid: data.puuid })
+         .then(function(pageView) {
+           if (! pageView) {
+             return;
+           }
+           pageView.is_exit = false;
+           pageView.refer_to = data.location;
+           pageView.refer_to_hostname = data.hostname;
+           pageView.refer_to_path = data.path;
+           return db.pageView.update(pageView);
+         })
+         .then(function() {
+           logger.info('previous page updated');
+         });
+  }
+
+  // no previous page, just return a null promise to simplify flow control.
+  return Promises.resolve();
+}
+
+function updateTags(data) {
+  var tags = data.tags || [];
+
+  return Promises.all(tags.map(function(tag) {
+    return db.tags.hit({
+        name: tag,
+        hostname: data.hostname
+      });
+  }));
+}
+
 
 function saveItem(data) {
   var location = data.location;
@@ -95,94 +164,27 @@ function saveItem(data) {
   });
 }
 
-function parseLocation(data) {
-  var parsedUrl = url.parse(data.location);
-  data.hostname = parsedUrl.hostname;
-  data.path = parsedUrl.pathname;
+MetricsCollector.prototype = {
+  init: function () {
+    // nothing to do here.
+  },
 
-  if (! data.hostname) {
-    logger.warn('error parsing location: %s, cannot save data', data.location);
-    throw new MetricsCollector.InvalidLocationError(data.location);
-  }
+  destroy: function () {
+    // nothing to do here.
+  },
 
-}
-
-function parseReferrer(data) {
-  if (data.referrer) {
-    var parsedReferrer = url.parse(data.referrer);
-    data.referrer_hostname = parsedReferrer.hostname;
-    data.referrer_path = parsedReferrer.pathname || '/';
-
-    if (! data.referrer_hostname) {
-      logger.warn('error parsing referrer: %s', data.referrer);
-      throw new MetricsCollector.InvalidReferrerError(data.referrer);
+  write: function (data) {
+    if (! data.length) {
+      data = [ data ];
     }
-    // TODO - if puuid is sent but referrer is not, pull the previous page
-    // and update accordingly.
+
+    return Promises.all(data.map(saveItem));
+  },
+
+  flush: function () {
+    // nothing to do here.
   }
-}
-
-function parseUserAgent(data) {
-  var ua = useragent.parse(data.userAgent || data.user_agent);
-  data.os = ua.os.toString();
-  data.os_parsed = {
-    family: ua.os.family,
-    major: ua.os.major,
-    minor: ua.os.minor
-  };
-
-  data.browser = {
-    family: ua.family,
-    major: ua.major,
-    minor: ua.minor
-  };
-}
-
-function cleanTags(data) {
-  if (data.tags) {
-    data.tags = data.tags.reduce(function(tags, tag) {
-      tag = tag && tag.trim();
-      if (tag && tag.length) tags.push(tag);
-      return tags;
-    }, []);
-  }
-}
-
-function updatePreviousPage(data) {
-  // If there is a previous page uuid, update the
-  // previous page's exit status, and where the
-  // user went.
-  if (data.puuid) {
-    return db.pageView.getOne({ uuid: data.puuid })
-         .then(function(pageView) {
-           if (! pageView) {
-             return;
-           }
-           pageView.is_exit = false;
-           pageView.refer_to = data.location;
-           pageView.refer_to_hostname = data.hostname;
-           pageView.refer_to_path = data.path;
-           return db.pageView.update(pageView);
-         })
-         .then(function() {
-           logger.info('previous page updated');
-         });
-  }
-
-  // no previous page, just return a null promise to simplify flow control.
-  return Promises.resolve();
-}
-
-function updateTags(data) {
-  var tags = data.tags || [];
-
-  return Promises.all(tags.map(function(tag) {
-    return db.tags.hit({
-        name: tag,
-        hostname: data.hostname
-      });
-  }));
-}
+};
 
 module.exports = MetricsCollector;
 

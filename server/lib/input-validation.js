@@ -4,9 +4,9 @@
 
 // A simple wrapper around joi with some helper functions.
 
-const joi = require('joi');
-
 'use strict';
+
+var joi = require('joi');
 
 for (var key in joi) {
   if (typeof joi[key] === 'function') {
