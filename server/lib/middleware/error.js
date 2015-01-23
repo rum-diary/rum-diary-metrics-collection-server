@@ -5,7 +5,7 @@
 'use strict';
 
 var logger = require('../logger');
-var httpErrors = require('../http-errors');
+var httpErrors = require('rum-diary-server-common').httpErrors;
 
 module.exports = function (err, req, res, next) {
   if (! err) {
