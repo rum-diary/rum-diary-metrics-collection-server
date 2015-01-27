@@ -20,5 +20,6 @@
   "white": false,
   "quotmark": "single",
   "strict": true,
-  "globalstrict": true
+  "globalstrict": true,
+  "mocha": true
 }

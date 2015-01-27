@@ -2,25 +2,18 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-const path = require('path');
+'use strict';
+
+var path = require('path');
+var processName = require('rum-diary-server-common').procname;
 
 module.exports = {
-  hostname: {
-    format: String,
-    'default': undefined
-  },
-  public_url: {
-    format: String,
-    'default': undefined
-  },
-  http_port: {
-    format: 'port',
-    'default': 80,
-    env: 'HTTP_PORT'
-  },
-  ssl: {
-    format: Boolean,
-    'default': true
+  server: {
+    port: {
+      format: 'port',
+      'default': 80,
+      env: 'HTTP_PORT'
+    }
   },
   env: {
     doc: 'What environment are we running in?  Note: all hosted environments are \'production\'.',
@@ -30,22 +23,26 @@ module.exports = {
   },
   config_dir: path.join(__dirname, '..', 'etc'),
   var_dir: path.join(__dirname, '..', 'var'),
-  logging_dir: {
-    doc: 'Where log files should be stored',
-    format: String,
-    'default': path.join(__dirname, '..', 'var', 'log')
-  },
-
   logging: {
+    file: {
+      doc: 'Full path where log files should be stored',
+      format: String,
+      'default': path.join(__dirname, '..', 'var', 'log', processName)
+    },
     level: {
       doc: 'Minimum level to log',
       format: ['TRACE', 'VERBOSE', 'DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL'],
       'default': 'DEBUG'
     },
     handlers: {
-      doc: 'Handlers to user',
+      doc: 'Handlers to use',
       format: Array,
       'default': ['console', 'file']
+    },
+    maxSize: {
+      doc: 'Maximum size of log file',
+      format: Number,
+      'default': 5 * 1024 * 1024
     }
   },
 
@@ -70,11 +67,6 @@ module.exports = {
     }
   },
 
-  proc_name: getProcName()
+  proc_name: processName
 };
-
-function getProcName() {
-  return path.basename(process.argv[1], '.js');
-}
-
 

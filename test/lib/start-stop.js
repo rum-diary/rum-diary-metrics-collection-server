@@ -3,13 +3,16 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // helpers to start and stop the server.
+'use strict';
 
-const spawn = require('child_process').spawn;
-const path = require('path');
+var spawn = require('child_process').spawn;
+var path = require('path');
 
 var proc;
 process.on('exit', function () {
-  if (proc) proc.kill();
+  if (proc) {
+    proc.kill();
+  }
 });
 
 exports.start = function start(done) {
@@ -27,14 +30,15 @@ exports.start = function start(done) {
   proc.stderr.on('data', function (buf) {
     console.error(buf.toString());
   });
-}
+};
+
 
 exports.stop = function stop(done) {
   proc.kill('SIGINT');
   proc.on('exit', function () {
     proc = null;
-    if (done) done();
+    if (done) {
+      done();
+    }
   });
-}
-
-
+};

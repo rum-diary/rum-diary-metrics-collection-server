@@ -4,26 +4,26 @@
 
 // A simple wrapper around joi with some helper functions.
 
-const joi = require('joi');
-
 'use strict';
 
-for (var key in joi) {
-  if (typeof joi[key] === 'function') {
-    exports[key] = joi[key].bind(joi);
+var iv = require('rum-diary-server-common').inputValidation;
+
+for (var key in iv) {
+  if (typeof iv[key] === 'function') {
+    exports[key] = iv[key].bind(iv);
   }
 }
 
 // A referrer for navigation data.
 // TODO - fill this out. It should be a full URL.
 exports.referrer = function () {
-  return joi.string().allow('');
+  return iv.string().allow('');
 };
 
 // A location for navigation data.
 // TODO - fill this out. It should be a full URL.
 exports.location = function () {
-  return joi.string().allow('').optional();
+  return iv.string().allow('').optional();
 };
 
 // navigationTiming data.
@@ -35,43 +35,43 @@ exports.navigationTiming = function () {
   var fields = require('./navigation-timing');
   var validationConfig = {};
   fields.forEach(function (field) {
-    validationConfig[field] = joi.alternatives(joi.number().integer(), joi.any().allow(null));
+    validationConfig[field] = iv.alternatives(iv.number().integer(), iv.any().allow(null));
   });
-  return joi.object(validationConfig);
+  return iv.object(validationConfig);
 };
 
 // guids used in reporting session information.
 exports.guid = function () {
-  return joi.string().guid();
+  return iv.string().guid();
 };
 
 // previous uuid - this is optional and is not reported if the user
 // is visiting their first page on the site in this session.
 exports.puuid = function () {
-  return joi.alternatives(exports.guid(), joi.any().allow(null));
+  return iv.alternatives(exports.guid(), iv.any().allow(null));
 };
 
 // Tags when reporting navigation timing.
 exports.tags = function () {
-  return joi.array().includes(joi.string().allow(''));
+  return iv.array().includes(iv.string().allow(''));
 };
 
 // Session duration.
 exports.duration = function () {
-  return joi.alternatives(joi.number().integer(), joi.any().allow(null));
+  return iv.alternatives(iv.number().integer(), iv.any().allow(null));
 };
 
 // unload data timers.
 exports.timers = function () {
-  return joi.object();
+  return iv.object();
 };
 
 // unload data events.
 exports.events = function () {
-  return joi.array(joi.any());
+  return iv.array(iv.any());
 };
 
 // The user-agent
 exports.userAgent = function () {
-  return joi.string().min(0).max(200).optional();
+  return iv.string().min(0).max(200).optional();
 };

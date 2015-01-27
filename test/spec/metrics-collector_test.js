@@ -2,12 +2,19 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-const assert = require('chai').assert;
+'use strict';
 
-const MetricsCollector = require('../../server/lib/metrics-collector');
-const db = require('../../server/lib/db');
-const siteCollection = db.site;
-const pageViewCollection = db.pageView;
+var assert = require('chai').assert;
+var common = require('rum-diary-server-common');
+
+var MetricsCollector = require('../../server/lib/metrics-collector');
+var config = require('../../server/lib/config');
+
+var logger = common.logging(common.configAdapter(config, 'logging'));
+var db = common.db(common.configAdapter(config, 'mongo'));
+
+var siteCollection = db.site;
+var pageViewCollection = db.pageView;
 
 /*global describe, it */
 
@@ -17,7 +24,10 @@ describe('lib/metrics-collector', function () {
   beforeEach(function () {
     db.clear();
 
-    metricsCollector = new MetricsCollector();
+    metricsCollector = new MetricsCollector({
+      db: db,
+      logger: logger
+    });
   });
 
   afterEach(function () {

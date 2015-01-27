@@ -2,28 +2,37 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-const express = require('express');
-const bodyParser = require('body-parser');
+'use strict';
 
-const routes = require('./lib/routes.js');
+var path = require('path');
+var common = require('rum-diary-server-common');
 
-const httpServer = require('./lib/http-server');
+var config = require('./lib/config');
+var logger = common.logging(common.configAdapter(config, 'logging'));
 
-const logging = require('./lib/middleware/logging');
-const errorHandler = require('./lib/middleware/error');
+var db = common.db(common.configAdapter(config, 'mongo'));
+
+var MetricsCollector = require('./lib/metrics-collector');
+var metricsCollector = new MetricsCollector({
+  db: db,
+  logger: logger
+});
 
 
-const app = express();
 
-app.use(logging({ app: app }));
-
-app.use(bodyParser.json());
-
+var app = common.app();
 app.disable('x-powered-by');
 
-// Get all of our routes.
-app.use(routes);
+app.use(common.middleware.logging(logger));
+app.use(require('body-parser').json());
+app.use(common.router({
+  cwd: path.join(__dirname, 'routes'),
+  route_config: {
+    'POST-metrics': {
+      collectors: [ metricsCollector ]
+    }
+  }
+}));
+app.use(require('./lib/middleware/error')(logger));
 
-app.use(errorHandler);
-
-httpServer.start({ app: app });
+common.httpServer.start(app, logger, common.configAdapter(config, 'server'));
