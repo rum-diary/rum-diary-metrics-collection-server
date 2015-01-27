@@ -5,7 +5,6 @@
 'use strict';
 
 var path = require('path');
-var express = require('express');
 var common = require('rum-diary-server-common');
 
 var config = require('./lib/config');
@@ -21,7 +20,7 @@ var metricsCollector = new MetricsCollector({
 
 
 
-var app = express();
+var app = common.app();
 app.disable('x-powered-by');
 
 app.use(common.middleware.logging(logger));
