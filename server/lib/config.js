@@ -39,25 +39,11 @@ function loadConfigFiles() {
   }
 }
 
-function getPublicUrl() {
-  var hostname = config.get('hostname');
-  var useSSL = config.get('ssl');
-  var httpPort = config.get('http_port');
-
-  var protocol = useSSL ? 'https' : 'http';
-  var port = useSSL ? (httpPort === 443 ? '' : ':' + httpPort) :
-                      (httpPort === 80 ? '' : ':' + httpPort);
-
-  return protocol + '://' + hostname + port;
-}
-
 useDevConfigIfNoneDefined();
 loadConfigFiles();
 setNodeEnv();
 
 config.validate();
-
-config.set('public_url', getPublicUrl());
 
 module.exports = config;
 

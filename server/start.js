@@ -4,26 +4,36 @@
 
 'use strict';
 
+var path = require('path');
 var express = require('express');
-var bodyParser = require('body-parser');
+var common = require('rum-diary-server-common');
 
-var routes = require('./lib/routes.js');
+var config = require('./lib/config');
+var logger = common.logging(common.configAdapter(config, 'logging'));
 
-var httpServer = require('./lib/http-server');
+var db = common.db(common.configAdapter(config, 'mongo'));
 
-var logging = require('./lib/middleware/logging');
-var errorHandler = require('./lib/middleware/error');
+var MetricsCollector = require('./lib/metrics-collector');
+var metricsCollector = new MetricsCollector({
+  db: db,
+  logger: logger
+});
+
+
 
 var app = express();
-
-app.use(logging({ app: app }));
-
-app.use(bodyParser.json());
-
 app.disable('x-powered-by');
 
-app.use(routes);
+app.use(common.middleware.logging(logger));
+app.use(require('body-parser').json());
+app.use(common.router({
+  cwd: path.join(__dirname, 'routes'),
+  route_config: {
+    'POST-metrics': {
+      collectors: [ metricsCollector ]
+    }
+  }
+}));
+app.use(require('./lib/middleware/error')(logger));
 
-app.use(errorHandler);
-
-httpServer.start({ app: app });
+common.httpServer.start(app, logger, common.configAdapter(config, 'server'));

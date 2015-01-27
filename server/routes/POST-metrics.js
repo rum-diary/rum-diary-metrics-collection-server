@@ -4,17 +4,14 @@
 
 'use strict';
 
-var joi = require('joi');
 var RumDiaryEndpoint = require('rum-diary-endpoint');
 var MetricsHandler = RumDiaryEndpoint.Handler;
-var MetricsCollector = require('../lib/metrics-collector');
-
 var inputValidation = require('../lib/input-validation');
 
 module.exports = function (options) {
   options = options || {};
 
-  var collectors = options.collectors || [ new MetricsCollector() ];
+  var collectors = options.collectors;
 
   var itemSchema = {
     uuid: inputValidation.guid(),
@@ -28,9 +25,9 @@ module.exports = function (options) {
     events: inputValidation.events(),
     userAgent: inputValidation.userAgent(),
     location: inputValidation.location(),
-    screen: joi.object().keys({
-      width: joi.number(),
-      height: joi.number()
+    screen: inputValidation.object().keys({
+      width: inputValidation.number(),
+      height: inputValidation.number()
     }).optional()
   };
 
@@ -42,8 +39,8 @@ module.exports = function (options) {
       // anything goes.
     },
 
-    validation: joi.alternatives().try(
-      joi.array().includes(itemSchema), itemSchema),
+    validation: inputValidation.alternatives().try(
+      inputValidation.array().includes(itemSchema), itemSchema),
 
     handler: new MetricsHandler({
       collectors: collectors

@@ -5,9 +5,14 @@
 'use strict';
 
 var assert = require('chai').assert;
+var common = require('rum-diary-server-common');
 
 var MetricsCollector = require('../../server/lib/metrics-collector');
-var db = require('../../server/lib/db');
+var config = require('../../server/lib/config');
+
+var logger = common.logging(common.configAdapter(config, 'logging'));
+var db = common.db(common.configAdapter(config, 'mongo'));
+
 var siteCollection = db.site;
 var pageViewCollection = db.pageView;
 
@@ -19,7 +24,10 @@ describe('lib/metrics-collector', function () {
   beforeEach(function () {
     db.clear();
 
-    metricsCollector = new MetricsCollector();
+    metricsCollector = new MetricsCollector({
+      db: db,
+      logger: logger
+    });
   });
 
   afterEach(function () {

@@ -8,19 +8,19 @@ var Promises = require('bluebird');
 var url = require('url');
 var useragent = require('useragent');
 
-var db = require('./db');
-var logger = require('./logger');
-var errorFactory = require('./error-factory');
+var errorFactory = require('rum-diary-server-common').errorFactory;
 
-function MetricsCollector() {
-  // nothing to do here.
+function MetricsCollector(options) {
+  options = options || {};
+  this._db = options.db;
+  this._logger = options.logger;
 }
 
 MetricsCollector.InvalidLocationError = errorFactory('InvalidLocation');
 MetricsCollector.InvalidReferrerError = errorFactory('InvalidReferrer');
 MetricsCollector.NonExistentSiteError = errorFactory('NonExistentSite');
 
-function parseLocation(data) {
+function parseLocation(logger, data) {
   var parsedUrl = url.parse(data.location);
   data.hostname = parsedUrl.hostname;
   data.path = parsedUrl.pathname;
@@ -31,7 +31,7 @@ function parseLocation(data) {
   }
 }
 
-function parseReferrer(data) {
+function parseReferrer(logger, data) {
   if (data.referrer) {
     var parsedReferrer = url.parse(data.referrer);
     data.referrer_hostname = parsedReferrer.hostname;
@@ -74,7 +74,7 @@ function cleanTags(data) {
   }
 }
 
-function updatePreviousPage(data) {
+function updatePreviousPage(db, logger, data) {
   // If there is a previous page uuid, update the
   // previous page's exit status, and where the
   // user went.
@@ -99,7 +99,7 @@ function updatePreviousPage(data) {
   return Promises.resolve();
 }
 
-function updateTags(data) {
+function updateTags(db, data) {
   var tags = data.tags || [];
 
   return Promises.all(tags.map(function(tag) {
@@ -111,7 +111,7 @@ function updateTags(data) {
 }
 
 
-function saveItem(data) {
+function saveItem(db, logger, data) {
   var location = data.location;
   logger.info('saving navigation data for: %s', location);
 
@@ -130,7 +130,7 @@ function saveItem(data) {
 
     // new page
 
-    parseLocation(data);
+    parseLocation(logger, data);
 
     return db.site.hit(data.hostname)
         .then(function (site) {
@@ -140,7 +140,7 @@ function saveItem(data) {
           }
 
           try {
-            parseReferrer(data);
+            parseReferrer(logger, data);
           } catch(e) {
             // swallow, not fatal.
           }
@@ -154,8 +154,8 @@ function saveItem(data) {
             db.pageView.create(data),
             // Note, this is not correct if the puuid or tags is sent
             // with the second call to /metrics for the page.
-            updatePreviousPage(data),
-            updateTags(data)
+            updatePreviousPage(db, logger, data),
+            updateTags(db, data)
           ]);
         });
   })
@@ -178,7 +178,7 @@ MetricsCollector.prototype = {
       data = [ data ];
     }
 
-    return Promises.all(data.map(saveItem));
+    return Promises.all(data.map(saveItem.bind(null, this._db, this._logger)));
   },
 
   flush: function () {

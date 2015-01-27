@@ -12,7 +12,7 @@ var assert = require('chai').assert;
 var request = require('request');
 
 var config = require('../../server/lib/config');
-var baseURL = 'http://localhost:' + config.get('http_port');
+var baseURL = 'http://localhost:' + config.get('server.port');
 
 var startStop = require('../lib/start-stop');
 

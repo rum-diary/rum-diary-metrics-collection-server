@@ -1,10 +1,6 @@
 {
   "env": "test",
-  "static_dir": "src",
   "verify_assertion": false,
-  "emailer": {
-    "transport": "console"
-  },
   "logging": {
     "level": "CRITICAL"
   }
